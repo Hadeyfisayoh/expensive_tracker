@@ -19,26 +19,24 @@ class TransactionViewModel extends ChangeNotifier {
   }
 
   // Fetch expenses from Firestore based on userId
-  Future<void> fetchExpensesByUser(String userId) async {
+  // Updated version of your fetchExpensesByUser method
+Future<void> fetchExpensesByUser(String userId) async {
     try {
       final querySnapshot = await FirebaseFirestore.instance
           .collection('expenses')
           .where('userId', isEqualTo: userId)
           .get();
 
-      _expenses = querySnapshot.docs
-          .map((doc) => Expense(
-                description: doc['description'],
-                amount: doc['amount'],
-                category: doc['category'],
-                date: DateTime.parse(doc['date']),
-              ))
-          .toList();
+      _expenses = querySnapshot.docs.map((doc) {
+        return Expense.fromJson(doc.data() as Map<String, dynamic>, doc.id);
+      }).toList();
+
       notifyListeners();
-    } catch (e) {
-      print('Error fetching expenses for user: $e');
+    } catch (error) {
+      print('Error fetching expenses for user: $error');
     }
   }
+
 
   // Add expense to Firestore
   Future<void> addExpenseToFirestore(String userId, Expense expense) async {
@@ -57,6 +55,21 @@ class TransactionViewModel extends ChangeNotifier {
       print('Error adding expense to Firestore: $e');
     }
   }
+
+  // Delete an expense from Firestore
+Future<void> deleteExpense(String expenseId) async {
+  try {
+    // Delete from Firestore
+    await FirebaseFirestore.instance.collection('expenses').doc(expenseId).delete();
+
+    // Remove from the local list
+    _expenses.removeWhere((expense) => expense.id == expenseId);
+    notifyListeners();
+  } catch (e) {
+    print('Error deleting expense: $e');
+  }
+}
+
 
   // Fetch exchange rates from the API and update the rates map
   Future<void> fetchExchangeRates() async {

@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/transaction_model.dart';
 
 class FirestoreService {
-  // Add a new expense to Firestore
   Future<void> addExpenseToFirestore(Expense expense) async {
     if (expense.amount <= 0 || expense.category.isEmpty || expense.description.isEmpty) {
       throw Exception("Invalid expense data");
@@ -28,31 +27,30 @@ class FirestoreService {
     }
   }
 
-  // Fetch all expenses from Firestore
   Future<List<Expense>> getExpensesFromFirestore() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
+  try {
+    final user = FirebaseAuth.instance.currentUser;
 
-      if (user == null) {
-        return [];
-      }
-
-      final expenseCollection = FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('expenses');
-
-      final snapshot = await expenseCollection.get();
-      return snapshot.docs
-          .map((doc) => Expense.fromJson(doc.data()))
-          .toList();
-    } catch (e) {
-      print("Error fetching expenses from Firestore: $e");
+    if (user == null) {
       return [];
     }
-  }
 
-  // Delete an expense from Firestore
+    final expenseCollection = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('expenses');
+
+    final snapshot = await expenseCollection.get();
+    return snapshot.docs
+        .map((doc) => Expense.fromJson(doc.data(), doc.id)) // Pass doc.data() and doc.id
+        .toList();
+  } catch (e) {
+    print("Error fetching expenses from Firestore: $e");
+    return [];
+  }
+}
+
+
   Future<void> deleteExpenseFromFirestore(String expenseId) async {
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -74,7 +72,6 @@ class FirestoreService {
     }
   }
 
-  // Update an expense in Firestore
   Future<void> updateExpenseInFirestore(String expenseId, Expense updatedExpense) async {
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -96,21 +93,23 @@ class FirestoreService {
     }
   }
 
-  // Stream expenses from Firestore in real-time
   Stream<List<Expense>> streamExpensesFromFirestore() {
-    final user = FirebaseAuth.instance.currentUser;
+  final user = FirebaseAuth.instance.currentUser;
 
-    if (user == null) {
-      return const Stream.empty();
-    }
-
-    final expenseCollection = FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .collection('expenses');
-
-    return expenseCollection.snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) => Expense.fromJson(doc.data())).toList();
-    });
+  if (user == null) {
+    return const Stream.empty();
   }
+
+  final expenseCollection = FirebaseFirestore.instance
+      .collection('users')
+      .doc(user.uid)
+      .collection('expenses');
+
+  return expenseCollection.snapshots().map((snapshot) {
+    return snapshot.docs
+        .map((doc) => Expense.fromJson(doc.data(), doc.id)) // Pass doc.data() and doc.id
+        .toList();
+  });
+}
+
 }

@@ -6,8 +6,10 @@ import 'views/auth/login_screen.dart';
 import 'views/auth/registration_screen.dart';
 import 'views/dashboard/dashboard_screen.dart';
 import 'views/expenses/add_expense_screen.dart';
+import 'views/expenses/update_expense_screen.dart'; // Import the UpdateExpenseScreen
 import 'viewmodels/auth_viewmodel.dart';
 import 'viewmodels/transaction_viewmodel.dart';
+import 'models/transaction_model.dart'; // Import the Expense model
 import 'firebase_options.dart';
 
 void main() async {
@@ -52,6 +54,16 @@ class MyApp extends StatelessWidget {
           '/register': (context) => RegistrationScreen(),
           '/dashboard': (context) => DashboardScreen(),
           '/add-expense': (context) => AddExpenseScreen(),
+        },
+        // Use onGenerateRoute for dynamic routes with arguments
+        onGenerateRoute: (settings) {
+          if (settings.name == '/update-expense') {
+            final expense = settings.arguments as Expense; // Cast the argument to Expense
+            return MaterialPageRoute(
+              builder: (context) => UpdateExpenseScreen(expense: expense),
+            );
+          }
+          return null; // Fallback for undefined routes
         },
       ),
     );
