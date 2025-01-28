@@ -5,7 +5,7 @@ import '../../models/transaction_model.dart';
 class UpdateExpenseScreen extends StatefulWidget {
   final Expense expense;
 
-  const UpdateExpenseScreen({Key? key, required this.expense}) : super(key: key);
+  const UpdateExpenseScreen({super.key, required this.expense});
 
   @override
   State<UpdateExpenseScreen> createState() => _UpdateExpenseScreenState();
@@ -17,7 +17,7 @@ class _UpdateExpenseScreenState extends State<UpdateExpenseScreen> {
   DateTime _selectedDate = DateTime.now();
   String? _selectedCategory;
 
-  final List<String> _categories = ['Food', 'Transport', 'Health', 'Entertainment', 'Other'];
+  final List<String> _categories = ['Food', 'Transport', 'Utilities', 'Others'];
 
   @override
   void initState() {

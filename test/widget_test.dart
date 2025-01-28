@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:expensive_tracker/viewmodels/transaction_viewmodel.dart'; // Ensure the correct import
 import 'package:expensive_tracker/models/transaction_model.dart'; // Ensure the correct import
-import 'package:expensive_tracker/views/dashboard/dashboard_screen.dart';
 
 
 void main() {

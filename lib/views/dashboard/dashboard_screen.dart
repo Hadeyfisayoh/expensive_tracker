@@ -11,6 +11,8 @@ import '../../models/transaction_model.dart'; // Import the Expense class
 import '../../viewmodels/transaction_viewmodel.dart'; // Import the TransactionViewModel
 
 class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key});
+
   @override
   _DashboardScreenState createState() => _DashboardScreenState();
 }
@@ -275,7 +277,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Consumer<TransactionViewModel>(builder: (context, viewModel, _) {
                           final totalExpensesConverted = _convertAmount(viewModel.totalExpenses);
                           return Text(
-                            "Total Expenses: ${_selectedCurrency} ${totalExpensesConverted.toStringAsFixed(2)}",
+                            "Total Expenses: $_selectedCurrency ${totalExpensesConverted.toStringAsFixed(2)}",
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w600,
@@ -284,7 +286,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           );
                         }),
                         const SizedBox(height: 20),
-                        // Add the chart here
+                        
                         ExpenseChart(expenses: _filteredExpenses),
                         const SizedBox(height: 20),
                         Expanded(
@@ -331,7 +333,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             Text(
-                                              "${_selectedCurrency} ${convertedAmount.toStringAsFixed(2)}",
+                                              "$_selectedCurrency ${convertedAmount.toStringAsFixed(2)}",
                                               style: TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold,
@@ -340,9 +342,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             ),
                                             IconButton(
                                               icon: Icon(Icons.edit, color: Colors.blue),
-                                              onPressed: () {
+                                              onPressed: () async {
                                                 // Handle update expense logic here
-                                                Navigator.pushNamed(context, '/update-expense', arguments: expense);
+                                                final updatedExpense = await Navigator.pushNamed(
+                                                  context,
+                                                  '/update-expense',
+                                                  arguments: expense,
+                                                ) as Expense?;
+
+                                                if (updatedExpense != null) {
+                                                  await viewModel.updateExpense(updatedExpense);
+                                                  setState(() {
+                                                    _filteredExpenses = viewModel.expenses;
+                                                  });
+                                                }
                                               },
                                             ),
                                             IconButton(
@@ -418,7 +431,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 class ExpenseChart extends StatelessWidget {
   final List<Expense> expenses;
 
-  ExpenseChart({required this.expenses});
+  const ExpenseChart({super.key, required this.expenses});
 
   Map<String, double> _getCategoryTotals() {
     Map<String, double> categoryTotals = {};
@@ -440,56 +453,89 @@ class ExpenseChart extends StatelessWidget {
     final categories = categoryTotals.keys.toList();
     final amounts = categoryTotals.values.toList();
 
+    // Handle empty state
+    if (amounts.isEmpty) {
+      return Center(
+        child: Text(
+          "No expenses to display",
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.blueGrey[800],
+          ),
+        ),
+      );
+    }
+
+    final totalAmount = amounts.reduce((a, b) => a + b);
+
+    // Define a list of colors for the pie chart segments
+    final List<Color> segmentColors = [
+      Colors.blueAccent,
+      Colors.greenAccent,
+      Colors.orangeAccent,
+      Colors.purpleAccent,
+      Colors.redAccent,
+      Colors.tealAccent,
+    ];
+
     return Container(
-      height: 200,
+      height: 300,
       padding: const EdgeInsets.all(16),
-      child: LineChart(
-        LineChartData(
-          gridData: FlGridData(show: false), // Hide grid lines
-          titlesData: FlTitlesData(
-            show: true,
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                getTitlesWidget: (double value, TitleMeta meta) {
-                  final index = value.toInt();
-                  if (index >= 0 && index < categories.length) {
-                    return Text(
-                      categories[index],
-                      style: TextStyle(fontSize: 12, color: Colors.blueGrey),
+      child: Column(
+        children: [
+          Expanded(
+            child: PieChart(
+              PieChartData(
+                sectionsSpace: 0,
+                centerSpaceRadius: 40,
+                sections: List.generate(
+                  categories.length,
+                  (index) {
+                    final percentage = (amounts[index] / totalAmount) * 100;
+                    return PieChartSectionData(
+                      color: segmentColors[index % segmentColors.length],
+                      value: amounts[index],
+                      title: '${percentage.toStringAsFixed(1)}%',
+                      radius: 80,
+                      titleStyle: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     );
-                  }
-                  return const SizedBox();
-                },
-              ),
-            ),
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                getTitlesWidget: (double value, TitleMeta meta) {
-                  return Text(
-                    value.toInt().toString(),
-                    style: TextStyle(fontSize: 12, color: Colors.blueGrey),
-                  );
-                },
+                  },
+                ),
               ),
             ),
           ),
-          borderData: FlBorderData(show: false), // Hide border
-          lineBarsData: [
-            LineChartBarData(
-              spots: List.generate(
-                categories.length,
-                (index) => FlSpot(index.toDouble(), amounts[index]),
+          const SizedBox(height: 16),
+          // Legend
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: List.generate(
+              categories.length,
+              (index) => Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 16,
+                    height: 16,
+                    color: segmentColors[index % segmentColors.length],
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    categories[index],
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.blueGrey[800],
+                    ),
+                  ),
+                ],
               ),
-              isCurved: true, // Make the line curved
-              color: Colors.blueAccent,
-              barWidth: 4,
-              dotData: FlDotData(show: true), // Show dots on the line
-              belowBarData: BarAreaData(show: false), // No area below the line
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

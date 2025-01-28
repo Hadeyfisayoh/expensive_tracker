@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../viewmodels/expense_viewmodel.dart';
 
 class ExpenseListScreen extends StatelessWidget {
+  const ExpenseListScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -5,6 +5,8 @@ import '../../viewmodels/transaction_viewmodel.dart';
 import '../../models/transaction_model.dart';
 
 class AddExpenseScreen extends StatefulWidget {
+  const AddExpenseScreen({super.key});
+
   @override
   _AddExpenseScreenState createState() => _AddExpenseScreenState();
 }
@@ -193,7 +195,7 @@ class CustomTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final String? Function(String?)? validator;
 
-  const CustomTextField({
+  const CustomTextField({super.key, 
     required this.controller,
     required this.labelText,
     required this.prefixIcon,
@@ -230,7 +232,7 @@ class CustomDropdown extends StatelessWidget {
   final Function(String?)? onChanged;
   final String? Function(String?)? validator;
 
-  const CustomDropdown({
+  const CustomDropdown({super.key, 
     required this.value,
     required this.items,
     required this.labelText,
@@ -270,7 +272,7 @@ class DatePickerButton extends StatelessWidget {
   final DateTime selectedDate;
   final Function(DateTime) onDateSelected;
 
-  const DatePickerButton({
+  const DatePickerButton({super.key, 
     required this.selectedDate,
     required this.onDateSelected,
   });

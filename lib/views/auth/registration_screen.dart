@@ -3,6 +3,8 @@ import 'package:expensive_tracker/viewmodels/auth_viewmodel.dart';
 import 'package:provider/provider.dart';
 
 class RegistrationScreen extends StatefulWidget {
+  const RegistrationScreen({super.key});
+
   @override
   _RegistrationScreenState createState() => _RegistrationScreenState();
 }

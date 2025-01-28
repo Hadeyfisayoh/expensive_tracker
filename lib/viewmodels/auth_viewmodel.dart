@@ -22,21 +22,33 @@ class AuthViewModel extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       // Handle any errors
-      throw e;
+      rethrow;
     }
   }
 
-  Future<void> login(String email, String password) async {
+  Future<bool> login(String email, String password) async {
     try {
       // Sign the user in with email and password
       await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
+
+      // Check if the user's email is verified
+      bool verified = await isEmailVerified();
+      if (!verified) {
+        // If the email is not verified, log the user out
+        await logout();
+      }
+
+      // Notify listeners (UI) to reflect any changes, if needed
       notifyListeners();
+
+      // Return whether the user is verified
+      return verified;
     } catch (e) {
       // Handle login error
-      throw e;
+      rethrow;
     }
   }
 

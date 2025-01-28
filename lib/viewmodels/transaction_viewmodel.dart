@@ -19,8 +19,7 @@ class TransactionViewModel extends ChangeNotifier {
   }
 
   // Fetch expenses from Firestore based on userId
-  // Updated version of your fetchExpensesByUser method
-Future<void> fetchExpensesByUser(String userId) async {
+  Future<void> fetchExpensesByUser(String userId) async {
     try {
       final querySnapshot = await FirebaseFirestore.instance
           .collection('expenses')
@@ -28,7 +27,7 @@ Future<void> fetchExpensesByUser(String userId) async {
           .get();
 
       _expenses = querySnapshot.docs.map((doc) {
-        return Expense.fromJson(doc.data() as Map<String, dynamic>, doc.id);
+        return Expense.fromJson(doc.data(), doc.id);
       }).toList();
 
       notifyListeners();
@@ -36,7 +35,6 @@ Future<void> fetchExpensesByUser(String userId) async {
       print('Error fetching expenses for user: $error');
     }
   }
-
 
   // Add expense to Firestore
   Future<void> addExpenseToFirestore(String userId, Expense expense) async {
@@ -57,19 +55,38 @@ Future<void> fetchExpensesByUser(String userId) async {
   }
 
   // Delete an expense from Firestore
-Future<void> deleteExpense(String expenseId) async {
-  try {
-    // Delete from Firestore
-    await FirebaseFirestore.instance.collection('expenses').doc(expenseId).delete();
+  Future<void> deleteExpense(String expenseId) async {
+    try {
+      // Delete from Firestore
+      await FirebaseFirestore.instance.collection('expenses').doc(expenseId).delete();
 
-    // Remove from the local list
-    _expenses.removeWhere((expense) => expense.id == expenseId);
-    notifyListeners();
-  } catch (e) {
-    print('Error deleting expense: $e');
+      // Remove from the local list
+      _expenses.removeWhere((expense) => expense.id == expenseId);
+      notifyListeners();
+    } catch (e) {
+      print('Error deleting expense: $e');
+    }
   }
-}
 
+  // Update an expense in Firestore
+  Future<void> updateExpense(Expense updatedExpense) async {
+    try {
+      // Update in Firestore
+      await FirebaseFirestore.instance
+          .collection('expenses')
+          .doc(updatedExpense.id)
+          .update(updatedExpense.toJson());
+
+      // Update in the local list
+      final index = _expenses.indexWhere((expense) => expense.id == updatedExpense.id);
+      if (index != -1) {
+        _expenses[index] = updatedExpense;
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Error updating expense: $e');
+    }
+  }
 
   // Fetch exchange rates from the API and update the rates map
   Future<void> fetchExchangeRates() async {

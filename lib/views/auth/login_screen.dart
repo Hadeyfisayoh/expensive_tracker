@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:expensive_tracker/viewmodels/auth_viewmodel.dart';
 import 'package:provider/provider.dart';
+import 'package:expensive_tracker/viewmodels/auth_viewmodel.dart'; // Adjust the import path as needed
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -25,7 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        constraints: BoxConstraints.expand(), // Ensure the container fills the screen
+        constraints: BoxConstraints.expand(),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -133,12 +135,20 @@ class _LoginScreenState extends State<LoginScreen> {
                               _isLoading = true;
                             });
                             try {
-                              await Provider.of<AuthViewModel>(context, listen: false).login(
+                              bool isVerified = await Provider.of<AuthViewModel>(context, listen: false).login(
                                 _emailController.text,
                                 _passwordController.text,
                               );
-                              Navigator.pushNamed(context, '/dashboard');
+
+                              if (isVerified) {
+                                // Navigate to the dashboard if the user is verified
+                                Navigator.pushNamed(context, '/dashboard');
+                              } else {
+                                // Show an error if the user is not verified
+                                _showErrorSnackBar('Please verify your email before logging in.');
+                              }
                             } catch (e) {
+                              // Handle login errors
                               _showErrorSnackBar('Invalid email or password');
                             } finally {
                               setState(() {
